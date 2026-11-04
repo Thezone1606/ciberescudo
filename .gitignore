@@ -1,0 +1,19 @@
+node_modules/
+.next/
+dist/
+.env
+.env.*
+!.env.example
+infra/certs/*.pem
+infra/backups/
+test-results/
+playwright-report/
+*.log
+
+# Generado o local
+reporte-*.csv
+.claude/settings.local.json
+.claude/skills/
+.claude/agents/
+.shots/
+.env.local

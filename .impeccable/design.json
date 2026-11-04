@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T00:00:00Z",
+  "title": "Design System: CiberEscudo",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Tinta Nocturna", "canonical": "#0b0f19", "tonalRamp": ["#030509", "#070a12", "#0b0f19", "#111827", "#1e293b", "#334155", "#64748b", "#94a3b8"] },
+      "surface": { "role": "neutral", "displayName": "Pizarra", "canonical": "#1e293b", "tonalRamp": ["#0b0f19", "#111827", "#1e293b", "#263349", "#334155", "#475569", "#64748b", "#94a3b8"] },
+      "surface-hi": { "role": "neutral", "displayName": "Pizarra Alta", "canonical": "#263349", "tonalRamp": ["#111827", "#1e293b", "#263349", "#2f3f5a", "#334155", "#475569", "#64748b", "#94a3b8"] },
+      "line": { "role": "neutral", "displayName": "Línea Translúcida", "canonical": "rgb(148 163 184 / 0.18)", "tonalRamp": ["rgb(148 163 184 / 0.05)", "rgb(148 163 184 / 0.1)", "rgb(148 163 184 / 0.18)", "rgb(148 163 184 / 0.25)", "rgb(148 163 184 / 0.35)", "rgb(148 163 184 / 0.5)", "rgb(148 163 184 / 0.7)", "rgb(148 163 184 / 1)"] },
+      "text": { "role": "neutral", "displayName": "Texto Hielo", "canonical": "#e2e8f0", "tonalRamp": ["#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#f8fafc", "#ffffff"] },
+      "muted": { "role": "neutral", "displayName": "Gris Pizarra", "canonical": "#94a3b8", "tonalRamp": ["#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9"] },
+      "cyan": { "role": "primary", "displayName": "Cian de Acción", "canonical": "#06b6d4", "tonalRamp": ["#083344", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#22d3ee", "#67e8f9", "#cffafe"] },
+      "blue": { "role": "secondary", "displayName": "Azul de Energía", "canonical": "#3b82f6", "tonalRamp": ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#dbeafe"] },
+      "ok": { "role": "tertiary", "displayName": "Verde Mitigado", "canonical": "#10b981", "tonalRamp": ["#022c22", "#064e3b", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#d1fae5"] },
+      "danger": { "role": "tertiary", "displayName": "Rojo Vulnerabilidad", "canonical": "#ef4444", "tonalRamp": ["#450a0a", "#7f1d1d", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fee2e2"] },
+      "warn": { "role": "tertiary", "displayName": "Ámbar Alerta", "canonical": "#f59e0b", "tonalRamp": ["#451a03", "#78350f", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d", "#fef3c7"] }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Título de pantalla (Tus retos, Clasificación, login)." },
+      "title": { "displayName": "Title", "purpose": "Encabezados de panel y de nodo." },
+      "body": { "displayName": "Body", "purpose": "Descripciones en gris pizarra." },
+      "label": { "displayName": "Label", "purpose": "Pestañas, encabezados de tabla, etiquetas y botones." },
+      "data": { "displayName": "Data", "purpose": "XP, racha, posiciones y relojes en JetBrains Mono." }
+    },
+    "shadows": [
+      { "name": "dialog", "value": "0 25px 50px -12px rgb(0 0 0 / 0.6)", "purpose": "Única sombra: el diálogo modal sobre un telón rgb(11 15 25 / 0.8)." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Curva de barras de progreso y animaciones de firma." },
+      { "name": "node-pulse", "value": "2.2s infinite, scale 1 a 1.7, opacidad .55 a 0", "purpose": "Anillo del nodo actual." },
+      { "name": "layer-break", "value": "0.7s, scale 1.25 rotate(-6deg), rojo", "purpose": "Capa de escudo que se pierde." },
+      { "name": "press", "value": "150ms, scale 0.97", "purpose": "Retroalimentación al presionar botones." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción única de la pantalla: Iniciar reto, Entrar.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Iniciar reto</a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 8px; background: var(--color-cyan, #06b6d4); color: var(--color-ink, #0b0f19); font: 600 14px Inter, system-ui, sans-serif; text-decoration: none; transition: transform 150ms, background-color 150ms; } .ds-btn-primary:hover { background: rgb(6 182 212 / 0.9); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #06b6d4; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acción de recuperación, p. ej. Reintentar.",
+      "html": "<button class=\"ds-btn-secondary\">Reintentar</button>",
+      "css": ".ds-btn-secondary { min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #1e293b; color: #e2e8f0; font: 500 14px Inter, system-ui, sans-serif; box-shadow: 0 0 0 1px rgb(148 163 184 / 0.18); transition: background-color 150ms; } .ds-btn-secondary:hover { background: #263349; } .ds-btn-secondary:focus-visible { outline: 2px solid #06b6d4; outline-offset: 2px; }"
+    },
+    {
+      "name": "Route Tabs",
+      "kind": "nav",
+      "refersTo": "tab-selected",
+      "description": "Selector segmentado de ruta de aprendizaje.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">Ruta corporativa</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Ruta técnica</button></div>",
+      "css": ".ds-tabs { display: inline-flex; padding: 4px; border-radius: 8px; background: #1e293b; box-shadow: 0 0 0 1px rgb(148 163 184 / 0.18); } .ds-tab { min-height: 40px; padding: 0 16px; border: 0; border-radius: 6px; background: transparent; color: #94a3b8; font: 500 14px Inter, system-ui, sans-serif; transition: color 150ms; } .ds-tab:hover { color: #e2e8f0; } .ds-tab[aria-selected=true] { background: #06b6d4; color: #0b0f19; } .ds-tab:focus-visible { outline: 2px solid #06b6d4; outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Campo del login con anillo que pasa a cian en foco.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"nombre@dsintelligence.com\">",
+      "css": ".ds-input { min-height: 48px; padding: 0 16px; border: 0; border-radius: 8px; background: #1e293b; color: #e2e8f0; font: 400 16px Inter, system-ui, sans-serif; box-shadow: 0 0 0 1px rgb(148 163 184 / 0.18); caret-color: #06b6d4; } .ds-input::placeholder { color: #94a3b8; } .ds-input:focus { outline: none; box-shadow: 0 0 0 2px #06b6d4; }"
+    },
+    {
+      "name": "Challenge Node (current)",
+      "kind": "custom",
+      "refersTo": "card-current-node",
+      "description": "Nodo actual del camino: marcador cian pulsante y tarjeta de pizarra.",
+      "html": "<div class=\"ds-node\"><span class=\"ds-node-marker\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><polygon points=\"6 3 20 12 6 21 6 3\"/></svg></span><div class=\"ds-node-card\"><h3>Reconocer un correo de phishing</h3><p>Phishing · Básico · <span class=\"ds-mono\">+30 XP</span></p></div></div>",
+      "css": ".ds-node { display: flex; gap: 16px; font-family: Inter, system-ui, sans-serif; color: #e2e8f0; } .ds-node-marker { position: relative; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 9999px; background: #06b6d4; color: #0b0f19; flex-shrink: 0; } .ds-node-marker::after { content: ''; position: absolute; inset: 0; border-radius: 9999px; border: 2px solid #06b6d4; animation: ds-pulse 2.2s cubic-bezier(0.23,1,0.32,1) infinite; } .ds-node-card { flex: 1; padding: 16px; border-radius: 8px; background: #1e293b; box-shadow: 0 0 0 1px rgb(6 182 212 / 0.4); } .ds-node-card h3 { margin: 0; font-size: 16px; font-weight: 500; } .ds-node-card p { margin: 4px 0 0; font-size: 14px; color: #94a3b8; } .ds-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; } @keyframes ds-pulse { 0% { transform: scale(1); opacity: .55; } 70%, 100% { transform: scale(1.7); opacity: 0; } }"
+    },
+    {
+      "name": "Shield Meter",
+      "kind": "custom",
+      "refersTo": "badge-multiplier",
+      "description": "Escudo de 5 capas concéntricas; aquí 3 encendidas.",
+      "html": "<div class=\"ds-shield\"><svg viewBox=\"0 0 24 24\" width=\"40\" height=\"40\" fill=\"none\"><g stroke=\"#94a3b8\" stroke-opacity=\".7\" stroke-width=\"1.25\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/></g><g stroke=\"#06b6d4\" stroke-width=\"1.25\" transform=\"translate(12 12.4) scale(.58) translate(-12 -12.4)\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/></g></svg><span>3/5</span></div>",
+      "css": ".ds-shield { display: flex; align-items: center; gap: 8px; } .ds-shield span { font: 400 14px 'JetBrains Mono', ui-monospace, monospace; color: #94a3b8; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Tablero de Guardia",
+    "overview": "Una consola de trabajo, no una pantalla de juego. La tinta casi negra azulada es el suelo, la pizarra sube un escalón para agrupar, y un único cian marca lo que pide acción. El tono es profesional con motivación sutil: el estado del colaborador (escudo, racha, XP, rango) se lee de un vistazo en la barra superior, y el camino de retos deja al siguiente como lo único resaltado. El mundo lo fijó el usuario en la especificación de Semana 1-4; la build lo sigue con fidelidad.\n\nLa densidad es media y calmada: una columna de lectura con un panel lateral de 20rem en escritorio, una sola columna con navegación inferior en móvil. La profundidad se logra con capas tonales y anillos de 1 px, no con sombras. Los números van en tabulares y los datos en JetBrains Mono.",
+    "keyCharacteristics": [
+      "Un solo color de acción (cian); verde solo para lo completado; rojo y ámbar solo cuando un estado lo exige.",
+      "Superficies planas de pizarra con anillo translúcido de 1 px; sin degradados ni vidrio.",
+      "Esquinas de 8 px como norma; círculos para nodos.",
+      "Íconos de trazo único (lucide) y un escudo de 5 capas concéntricas como firma.",
+      "Movimiento solo en transform y opacity, con reducción de movimiento respetada."
+    ],
+    "rules": [
+      { "name": "The One Action Rule", "body": "El cian es la única señal de acción. Si dos elementos de una pantalla compiten con cian de relleno, uno sobra.", "section": "colors" },
+      { "name": "The State-Only Color Rule", "body": "Verde, rojo y ámbar aparecen solo cuando un estado los exige; nunca como decoración ni como segundo acento.", "section": "colors" },
+      { "name": "The Mono-Means-Data Rule", "body": "JetBrains Mono solo para cifras, relojes y código. Nunca para títulos ni párrafos.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Las superficies en reposo no llevan sombra. Solo lo que flota sobre la página (el diálogo) la usa.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar cian (#06b6d4) solo para la acción primaria, la selección y el progreso.",
+      "Do usar esquinas de 8 px y anillos de 1 px translúcidos para toda superficie.",
+      "Do poner cifras en JetBrains Mono con números tabulares.",
+      "Do mantener íconos de trazo único de lucide, de 16-20 px, con aria-hidden cuando acompañan texto.",
+      "Do animar solo transform y opacity, con la curva ease-out (0.23, 1, 0.32, 1), y respetar prefers-reduced-motion.",
+      "Do dar a todo control interactivo al menos 40 px de alto y foco visible cian."
+    ],
+    "donts": [
+      "Don't usar degradados, vidrio o desenfoque de fondo.",
+      "Don't convertir el hub en una rejilla de tarjetas iguales con ícono, ni en una métrica gigante.",
+      "Don't usar verde, rojo o ámbar como decoración o segundo acento.",
+      "Don't poner sombra a superficies en reposo.",
+      "Don't usar JetBrains Mono para títulos o párrafos."
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "prisma", "scripts"],
+  "exclude": ["scripts/cleanup-e2e.ts", "tests", "node_modules", "dist"]
+}

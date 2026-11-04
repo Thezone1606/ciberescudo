@@ -1,0 +1,139 @@
+import argon2 from "argon2";
+import { randomUUID } from "node:crypto";
+import { prisma } from "../../db";
+import { HttpError } from "../../middleware/errors";
+import { recoverShield } from "../gamification/rules";
+import { REFRESH_TTL_SECONDS, signAccess, signRefresh, verifyRefresh, type RoleName } from "./tokens";
+
+const userInclude = { role: true, department: true } as const;
+
+// Hash de relleno para que el login de un correo inexistente tarde lo mismo que uno real.
+let dummyHash: Promise<string> | undefined;
+const getDummyHash = () => (dummyHash ??= argon2.hash("relleno-anti-enumeracion", { type: argon2.argon2id }));
+
+export function toProfile(u: {
+  id: string;
+  email: string;
+  fullName: string;
+  currentXp: number;
+  currentStreak: number;
+  shieldIntegrity: number;
+  cooldownUntil: Date | null;
+  role: { name: string };
+  department: { id: string; name: string };
+}) {
+  // Vista del estado: si el enfriamiento ya terminó, el escudo se muestra restaurado
+  // (la BD se actualiza en el siguiente intento).
+  const view = recoverShield(
+    { xp: u.currentXp, streak: u.currentStreak, shield: u.shieldIntegrity, cooldownUntil: u.cooldownUntil, lastActivityDay: null },
+    new Date(),
+  );
+  return {
+    id: u.id,
+    email: u.email,
+    fullName: u.fullName,
+    role: u.role.name as RoleName,
+    department: u.department,
+    currentXp: u.currentXp,
+    currentStreak: u.currentStreak,
+    shieldIntegrity: view.shield,
+    cooldownUntil: view.cooldownUntil,
+  };
+}
+
+// Emite un par de tokens y registra el refresh (un solo uso) en la BD.
+async function issueTokens(u: { id: string; tokenVersion: number }, familyId: string = randomUUID()) {
+  const jti = randomUUID();
+  await prisma.refreshToken.create({
+    data: { id: jti, userId: u.id, familyId, expiresAt: new Date(Date.now() + REFRESH_TTL_SECONDS * 1000) },
+  });
+  return {
+    accessToken: signAccess(u.id, u.tokenVersion),
+    refreshToken: signRefresh(u.id, u.tokenVersion, jti),
+    tokenType: "Bearer" as const,
+  };
+}
+
+// Invalida todas las sesiones del usuario: sube la versión (mata los access) y borra los refresh.
+async function revokeAllSessions(userId: string) {
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } }),
+    prisma.refreshToken.deleteMany({ where: { userId } }),
+  ]);
+}
+
+export async function login(email: string, password: string) {
+  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() }, include: userInclude });
+  const ok = await argon2.verify(user?.passwordHash ?? (await getDummyHash()), password).catch(() => false);
+  // Una cuenta desactivada responde igual que una contraseña incorrecta: no revela que existe.
+  if (!user || !ok || !user.isActive) throw new HttpError(401, "Correo o contraseña incorrectos", "invalid_credentials");
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  await prisma.refreshToken.deleteMany({ where: { userId: user.id, expiresAt: { lt: new Date() } } });
+  return { ...(await issueTokens(user)), user: toProfile(user) };
+}
+
+export async function refresh(refreshToken: string) {
+  let payload;
+  try {
+    payload = verifyRefresh(refreshToken);
+  } catch {
+    throw new HttpError(401, "Refresh token inválido o expirado", "unauthorized");
+  }
+  const invalid = () => new HttpError(401, "Sesión revocada", "unauthorized");
+
+  const row = await prisma.refreshToken.findUnique({ where: { id: payload.jti } });
+  if (!row || row.userId !== payload.sub || row.expiresAt < new Date()) throw invalid();
+
+  // Reutilización: ese token ya se canjeó. Puede haber sido robado, así que se cierran todas las sesiones.
+  if (row.usedAt) {
+    await revokeAllSessions(row.userId);
+    throw invalid();
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+  if (!user || !user.isActive || user.tokenVersion !== payload.ver) throw invalid();
+
+  // Canje atómico: si dos peticiones llegan a la vez, solo una gana.
+  const claimed = await prisma.refreshToken.updateMany({
+    where: { id: row.id, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+  if (claimed.count === 0) {
+    await revokeAllSessions(row.userId);
+    throw invalid();
+  }
+  return issueTokens(user, row.familyId);
+}
+
+export async function logout(userId: string) {
+  await revokeAllSessions(userId);
+}
+
+export const MIN_PASSWORD_LENGTH = 12;
+
+/**
+ * Cambia la contraseña de quien tiene la sesión. Exige la actual y cierra TODAS las sesiones (también esta):
+ * si alguien más la conocía, deja de servirle. La persona vuelve a iniciar sesión con la nueva.
+ */
+export async function changePassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new HttpError(401, "Usuario no encontrado", "unauthorized");
+  if (!(await argon2.verify(user.passwordHash, currentPassword).catch(() => false))) {
+    throw new HttpError(400, "La contraseña actual no es correcta", "wrong_password");
+  }
+  if (newPassword === currentPassword) throw new HttpError(400, "La contraseña nueva debe ser distinta de la actual", "same_password");
+  if (newPassword.toLowerCase().includes(user.email.split("@")[0].toLowerCase())) {
+    throw new HttpError(400, "La contraseña no debe contener tu nombre de usuario", "weak_password");
+  }
+  const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: userId }, data: { passwordHash, tokenVersion: { increment: 1 } } }),
+    prisma.refreshToken.deleteMany({ where: { userId } }),
+  ]);
+}
+
+export async function getProfile(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, include: userInclude });
+  if (!user) throw new HttpError(401, "Usuario no encontrado", "unauthorized");
+  return toProfile(user);
+}
