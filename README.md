@@ -1,14 +1,6 @@
 <div align="center">
 
-```
-   ____ _ _               _____                    _
-  / ___(_) |__   ___ _ __| ____|___  ___ _   _  __| | ___
- | |   | | '_ \ / _ \ '__|  _| / __|/ __| | | |/ _` |/ _ \
- | |___| | |_) |  __/ |  | |___\__ \ (__| |_| | (_| | (_) |
-  \____|_|_.__/ \___|_|  |_____|___/\___|\__,_|\__,_|\___/
-
-        [#####] [#####] [#####] [#####] [#####]   escudo 100 %
-```
+<img src="docs/banner.jpg" alt="CiberEscudo: aprende sobre phishing con retos interactivos" width="100%">
 
 **Aprende a detectar el phishing jugando. Retos de 3 a 5 minutos al día.**
 
