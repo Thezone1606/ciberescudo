@@ -28,9 +28,33 @@ Todo el contenido (correos, registros, hashes y dominios) es **sintético**: nun
 
 ## Contenido
 
-[Qué hace](#qué-hace) · [Arquitectura](#arquitectura) · [Gamificación](#gamificación) · [Inicio rápido](#inicio-rápido) ·
-[Pruebas](#pruebas) · [Despliegue con Docker](#despliegue-con-docker) · [Seguridad](#seguridad) ·
-[Administración](#administración) · [Piloto](#piloto) · [Estructura](#estructura-del-proyecto) · [Autoría](#autoría)
+[Vista previa](#vista-previa) · [Qué hace](#qué-hace) · [Arquitectura](#arquitectura) · [Gamificación](#gamificación) ·
+[Pruébalo en 3 minutos](#pruébalo-en-3-minutos) · [Inicio rápido](#inicio-rápido) · [Pruebas](#pruebas) ·
+[Despliegue con Docker](#despliegue-con-docker) · [Seguridad](#seguridad) · [Administración](#administración) ·
+[Piloto](#piloto) · [Estructura](#estructura-del-proyecto) · [Hoja de ruta](#hoja-de-ruta) · [Autoría](#autoría)
+
+---
+
+## Vista previa
+
+> Capturas reales de la plataforma con datos sintéticos.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/hub.png" alt="Centro de retos con la ruta corporativa"><br><sub><b>Centro de retos</b>: escudo, racha, XP y la ruta de aprendizaje.</sub></td>
+    <td width="50%"><img src="docs/screenshots/phishing.png" alt="Simulador de phishing con banderas arrastrables"><br><sub><b>Cazador de phishing</b>: arrastra banderas sobre lo sospechoso.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/terminal.png" alt="Terminal forense emulada en el navegador"><br><sub><b>Terminal forense</b>: comandos reales sobre archivos ficticios.</sub></td>
+    <td width="50%"><img src="docs/screenshots/admin-panel.png" alt="Panel de administración con mapa de calor"><br><sub><b>Panel de SecOps</b>: indicadores y mapa de calor por departamento.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/admin-usuarios.png" alt="Administración de usuarios con su avance"><br><sub><b>Usuarios</b>: avance de cada persona y gestión de cuentas.</sub></td>
+    <td width="50%"><img src="docs/screenshots/admin-piloto.png" alt="Control y resultados del piloto"><br><sub><b>Piloto</b>: fases, avance y resultados antes y después.</sub></td>
+  </tr>
+</table>
+
+<p align="center"><img src="docs/screenshots/hub-movil.png" alt="Centro de retos en un teléfono" width="260"><br><sub>Responsivo desde 360 px.</sub></p>
 
 ---
 
@@ -113,9 +137,30 @@ Son **20 retos** en dos rutas, más 8 correos de diagnóstico reservados para el
 
 ---
 
+## Pruébalo en 3 minutos
+
+Con Docker instalado, desde la carpeta `infra/`:
+
+```bash
+cp .env.example .env     # completa SERVER_NAME, POSTGRES_PASSWORD, JWT_ACCESS_SECRET y JWT_REFRESH_SECRET
+docker compose up -d --build
+./scripts/create-admin.sh
+```
+
+```
+   [1] copia el .env  ──►  [2] levanta el stack  ──►  [3] crea tu administrador
+                                                              │
+                                   https://SERVER_NAME  ◄─────┘   y entra
+```
+
+Para ver la plataforma con usuarios de demostración, pon `SEED_DEMO_USERS=true` y una `SEED_PASSWORD` en `infra/.env`
+**solo en pruebas**. El navegador avisará del certificado autofirmado; los detalles están en [Despliegue con Docker](#despliegue-con-docker).
+
+---
+
 ## Inicio rápido
 
-Requisitos: **Node.js 22 o superior** y **PostgreSQL 16**.
+Para desarrollar sin Docker. Requisitos: **Node.js 22 o superior** y **PostgreSQL 16**.
 
 ```bash
 # Backend (http://localhost:4000)
@@ -312,6 +357,19 @@ ciberescudo/
 ├── infra/                 docker-compose, Nginx, certificados y respaldos
 ├── DESIGN.md              sistema de diseño (colores, tipografía, componentes)
 └── PRODUCT.md             a quién sirve el producto y su tono
+```
+
+---
+
+## Hoja de ruta
+
+```
+   HECHO                                   PENDIENTE
+   [x] 2 rutas y 20 retos                  [ ] Piloto con personal de la empresa
+   [x] Escudo, rachas y XP                 [ ] Integración con Active Directory / LDAP
+   [x] Panel, usuarios y mapa de calor     [ ] Generación asistida de escenarios con IA local
+   [x] Piloto, SUS y reportes              [ ] CSP con nonces (hoy usa 'unsafe-inline')
+   [x] Docker, Nginx y TLS 1.3             [ ] Certificado de la CA de la empresa
 ```
 
 ---
