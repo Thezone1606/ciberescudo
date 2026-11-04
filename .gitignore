@@ -17,3 +17,4 @@ reporte-*.csv
 .claude/agents/
 .shots/
 .env.local
+.impeccable/hook.cache.json
