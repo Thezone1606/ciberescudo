@@ -6,7 +6,7 @@ import { prisma } from "../src/db";
 const app = createApp();
 const created: string[] = [];
 const bearer = (t: string) => ({ Authorization: `Bearer ${t}` });
-const STRONG = "Una-Clave-Larga-Y-Segura-2026";
+const STRONG = "Clave-Segur1"; // 12 caracteres, el máximo permitido
 
 let previous: { domains?: string; code?: string };
 beforeEach(() => {
@@ -92,7 +92,7 @@ describe("registro propio (sign-up)", () => {
     expect(again.status).toBe(409);
     expect(again.body.error ?? again.body.code).toBe("email_taken");
 
-    expect((await signup({ fullName: "Corta", email: mail(), password: "corta123", departmentId: d })).status).toBe(400);
+    expect((await signup({ fullName: "Corta", email: mail(), password: "corta12", departmentId: d })).status).toBe(400);
     const local = mail();
     expect((await signup({ fullName: "Con Usuario", email: local, password: `${local.split("@")[0]}-2026!!`, departmentId: d })).status).toBe(400);
     expect((await signup({ fullName: "Sin Depto", email: mail(), password: STRONG, departmentId: "00000000-0000-4000-8000-000000000000" })).status).toBe(400);
@@ -113,5 +113,20 @@ describe("registro propio (sign-up)", () => {
     const admin = await request(app).post("/api/v1/auth/login").send({ email: "secops@dsintelligence.test", password: process.env.SEED_PASSWORD });
     const list = await request(app).get(`/api/v1/admin/users?status=existing&search=${encodeURIComponent(email)}`).set(bearer(admin.body.accessToken));
     expect(list.body.users).toHaveLength(1);
+  });
+});
+
+describe("largo de la contraseña: de 8 a 12 caracteres", () => {
+  it("acepta 8 y 12, rechaza 7 y 13", async () => {
+    const d = (await dept()).id;
+    const attempt = (password: string) => signup({ fullName: "Largo Prueba", email: mail(), password, departmentId: d });
+    expect((await attempt("Abcdef7!")).status).toBe(201); // 8
+    expect((await attempt("Abcdefghij1!")).status).toBe(201); // 12
+    const short = await attempt("Abcde7!"); // 7
+    expect(short.status).toBe(400);
+    expect(short.body.issues[0].message).toMatch(/Mínimo 8/);
+    const long = await attempt("Abcdefghijk1!"); // 13
+    expect(long.status).toBe(400);
+    expect(long.body.issues[0].message).toMatch(/Máximo 12/);
   });
 });

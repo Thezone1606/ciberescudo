@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../../middleware/auth";
-import { changePassword, getProfile, login, logout, MIN_PASSWORD_LENGTH, refresh, signup, signupInfo } from "./auth.service";
+import { changePassword, getProfile, login, logout, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, refresh, signup, signupInfo } from "./auth.service";
 
 export const authRouter = Router();
 
@@ -19,7 +19,7 @@ const signupBody = z
   .object({
     fullName: z.string().trim().min(2).max(150),
     email: z.string().trim().email().max(255),
-    password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`).max(200),
+    password: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`).max(MAX_PASSWORD_LENGTH, `Máximo ${MAX_PASSWORD_LENGTH} caracteres`),
     departmentId: z.string().uuid(),
     code: z.string().max(100).optional(),
   })
@@ -45,7 +45,7 @@ authRouter.post("/auth/logout", requireAuth, async (req, res) => {
 
 const passwordBody = z.object({
   currentPassword: z.string().min(1).max(200),
-  newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`).max(200),
+  newPassword: z.string().min(MIN_PASSWORD_LENGTH, `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`).max(MAX_PASSWORD_LENGTH, `Máximo ${MAX_PASSWORD_LENGTH} caracteres`),
 });
 
 authRouter.post("/auth/password", requireAuth, async (req, res) => {

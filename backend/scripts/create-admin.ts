@@ -12,7 +12,7 @@ async function main() {
   const departmentName = process.env.ADMIN_DEPARTMENT?.trim() || "Desarrollo";
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("ADMIN_EMAIL no es un correo válido");
-  if (!password || password.length < 12) throw new Error("ADMIN_PASSWORD debe tener al menos 12 caracteres");
+  if (!password || password.length < 8 || password.length > 12) throw new Error("ADMIN_PASSWORD debe tener entre 8 y 12 caracteres");
   if (password.toLowerCase().includes(email.split("@")[0])) throw new Error("ADMIN_PASSWORD no debe contener el nombre del correo");
 
   const [role, department] = await Promise.all([

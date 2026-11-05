@@ -5,7 +5,8 @@ import { useId, useState, type FormEvent } from "react";
 import { describedBy, Field, inputClass, primaryButtonClass } from "@/components/admin/ui";
 import { apiFetch, useSession } from "@/lib/session";
 
-const MIN = 12;
+const MIN = 8;
+const MAX = 12;
 type FieldName = "current" | "next" | "confirm" | "form";
 
 export default function AccountPage() {
@@ -21,7 +22,7 @@ export default function AccountPage() {
 
   async function submit(ev: FormEvent) {
     ev.preventDefault();
-    if (next.length < MIN) return setError({ field: "next", message: `Usa al menos ${MIN} caracteres.` });
+    if (next.length < MIN || next.length > MAX) return setError({ field: "next", message: `Usa entre ${MIN} y ${MAX} caracteres.` });
     if (next !== confirm) return setError({ field: "confirm", message: "Las contraseñas no coinciden." });
     setBusy(true);
     setError(null);
@@ -56,7 +57,7 @@ export default function AccountPage() {
       <form onSubmit={submit} className="mt-8 flex flex-col gap-5" noValidate>
         <h2 className="text-lg font-semibold">Cambiar contraseña</h2>
         {field("cur", "current", "Contraseña actual", current, setCurrent, "current-password")}
-        {field("new", "next", "Contraseña nueva", next, setNext, "new-password", `Mínimo ${MIN} caracteres. No uses tu nombre de usuario.`)}
+        {field("new", "next", "Contraseña nueva", next, setNext, "new-password", `De ${MIN} a ${MAX} caracteres. No uses tu nombre de usuario.`)}
         {field("rep", "confirm", "Repite la contraseña nueva", confirm, setConfirm, "new-password")}
         {err("form") && <p role="alert" className="text-sm text-danger">{err("form")}</p>}
         <p className="text-sm text-muted">Al cambiarla se cierran todas tus sesiones y tendrás que iniciar sesión de nuevo.</p>

@@ -209,7 +209,7 @@ docker compose ps             # todos deben quedar en "healthy"
 ```
 
 El primer arranque aplica las migraciones y carga los catálogos y los 20 retos. No crea usuarios.
-Crea el primer administrador (la contraseña se pide sin eco, mínimo 12 caracteres):
+Crea el primer administrador (la contraseña se pide sin eco, de 8 a 12 caracteres):
 
 ```bash
 ./scripts/create-admin.sh
@@ -294,7 +294,7 @@ Las migraciones se aplican solas al arrancar el backend. Haz un respaldo antes d
 Las personas pueden **crear su propia cuenta** en `/registro` (o ser invitadas por el administrador):
 
 ```
-   /registro ──► nombre · correo corporativo · departamento · contraseña (12+ caracteres)
+   /registro ──► nombre · correo corporativo · departamento · contraseña (8 a 12 caracteres)
                       │
                       ├─ el correo debe terminar en un dominio de SIGNUP_ALLOWED_DOMAINS
                       ├─ si hay SIGNUP_CODE, también se pide el código

@@ -14,7 +14,8 @@ interface SignupInfo {
   departments: { id: string; name: string }[];
 }
 
-const MIN_LENGTH = 12;
+const MIN_LENGTH = 8;
+const MAX_LENGTH = 12;
 const field =
   "min-h-12 rounded-lg bg-surface px-4 text-base text-text ring-1 ring-line placeholder:text-muted focus:ring-2 focus:ring-cyan focus:outline-none";
 
@@ -39,7 +40,7 @@ export default function SignupPage() {
   const data = info.data;
   const local = email.split("@")[0].toLowerCase();
   const rules = [
-    { ok: password.length >= MIN_LENGTH, text: `Al menos ${MIN_LENGTH} caracteres` },
+    { ok: password.length >= MIN_LENGTH && password.length <= MAX_LENGTH, text: `Entre ${MIN_LENGTH} y ${MAX_LENGTH} caracteres` },
     { ok: local.length < 2 || !password.toLowerCase().includes(local), text: "No contiene tu nombre de usuario" },
     { ok: repeat.length > 0 && password === repeat, text: "Las dos contraseñas coinciden" },
   ];
@@ -140,13 +141,13 @@ export default function SignupPage() {
               <label htmlFor="password" className="text-sm font-medium">
                 Contraseña
               </label>
-              <input id="password" name="password" type={show ? "text" : "password"} autoComplete="new-password" required maxLength={200} aria-describedby="rules" className={field} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input id="password" name="password" type={show ? "text" : "password"} autoComplete="new-password" required maxLength={MAX_LENGTH} aria-describedby="rules" className={field} value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <label htmlFor="repeat" className="text-sm font-medium">
                 Repite la contraseña
               </label>
-              <input id="repeat" type={show ? "text" : "password"} autoComplete="new-password" required maxLength={200} className={field} value={repeat} onChange={(e) => setRepeat(e.target.value)} />
+              <input id="repeat" type={show ? "text" : "password"} autoComplete="new-password" required maxLength={MAX_LENGTH} className={field} value={repeat} onChange={(e) => setRepeat(e.target.value)} />
             </div>
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
               <input type="checkbox" className="size-5 accent-cyan" checked={show} onChange={(e) => setShow(e.target.checked)} />

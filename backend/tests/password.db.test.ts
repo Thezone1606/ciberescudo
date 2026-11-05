@@ -27,10 +27,10 @@ describe("cambio de contraseña", () => {
   it("con la actual correcta: la nueva funciona, la anterior no y las sesiones abiertas se cierran", async () => {
     const s = await session();
     const second = await login(s.email, s.password); // otra sesión (otro dispositivo)
-    const res = await change(s.token, s.password, "Una-Clave-Nueva-Y-Larga-2026");
+    const res = await change(s.token, s.password, "Clave-Nuev-9");
     expect(res.status).toBe(204);
 
-    expect((await login(s.email, "Una-Clave-Nueva-Y-Larga-2026")).status).toBe(200);
+    expect((await login(s.email, "Clave-Nuev-9")).status).toBe(200);
     expect((await login(s.email, s.password)).status).toBe(401);
     expect((await request(app).get("/api/v1/auth/me").set(bearer(s.token))).status).toBe(401);
     expect((await request(app).get("/api/v1/auth/me").set(bearer(second.body.accessToken))).status).toBe(401);
@@ -47,21 +47,28 @@ describe("cambio de contraseña", () => {
 
   it("rechaza una contraseña actual incorrecta sin cambiar nada", async () => {
     const s = await session();
-    const res = await change(s.token, "no-es-la-actual", "Una-Clave-Nueva-Y-Larga-2026");
+    const res = await change(s.token, "no-es-la-actual", "Clave-Nuev-9");
     expect(res.status).toBe(400);
     expect(res.body.error).toBe("wrong_password");
     expect((await login(s.email, s.password)).status).toBe(200);
   });
 
-  it("rechaza la nueva si es corta, igual a la actual o contiene el nombre de usuario", async () => {
+  it("rechaza la nueva si es corta, larga, igual a la actual o contiene el nombre de usuario", async () => {
     const s = await session();
-    const short = await change(s.token, s.password, "corta1");
-    expect(short.status).toBe(400);
-    expect(short.body.issues[0].message).toMatch(/Mínimo 12/);
-    expect((await change(s.token, s.password, s.password)).body.error).toBe("same_password");
-    const local = s.email.split("@")[0];
-    expect((await change(s.token, s.password, `${local}-clave-segura`)).body.error).toBe("weak_password");
-    expect((await login(s.email, s.password)).status).toBe(200); // nada cambió
+    expect((await change(s.token, s.password, "corta1")).body.issues[0].message).toMatch(/Mínimo 8/);
+    const long = await change(s.token, s.password, "Abcdefghijk1!"); // 13 caracteres
+    expect(long.status).toBe(400);
+    expect(long.body.issues[0].message).toMatch(/Máximo 12/);
+
+    // Las contraseñas iniciales que da la plataforma son más largas; se pasa a una de 8 a 12 para probar el resto.
+    const first = "Clave-Nuev-9";
+    expect((await change(s.token, s.password, first)).status).toBe(204);
+    const short = Math.random().toString(36).slice(2, 6);
+    await prisma.user.update({ where: { id: s.id }, data: { email: `${short}@dsintelligence.test` } });
+    const t = (await login(`${short}@dsintelligence.test`, first)).body.accessToken as string;
+    expect((await change(t, first, first)).body.error).toBe("same_password");
+    expect((await change(t, first, `${short}-clave1`)).body.error).toBe("weak_password");
+    expect((await login(`${short}@dsintelligence.test`, first)).status).toBe(200); // nada cambió
   });
 
   it("exige sesión y un cuerpo completo", async () => {

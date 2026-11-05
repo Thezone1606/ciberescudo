@@ -112,7 +112,8 @@ export async function logout(userId: string) {
   await revokeAllSessions(userId);
 }
 
-export const MIN_PASSWORD_LENGTH = 12;
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 12;
 
 /**
  * Cambia la contraseña de quien tiene la sesión. Exige la actual y cierra TODAS las sesiones (también esta):

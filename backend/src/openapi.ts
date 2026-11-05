@@ -187,7 +187,7 @@ Object.assign(openapi.paths, {
 Object.assign(openapi.paths, {
   "/auth/password": {
     post: {
-      summary: "Cambia la contraseña (mínimo 12 caracteres) y cierra todas las sesiones",
+      summary: "Cambia la contraseña (de 8 a 12 caracteres) y cierra todas las sesiones",
       security: secured,
       requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["currentPassword", "newPassword"], properties: { currentPassword: { type: "string" }, newPassword: { type: "string", minLength: 12 } } } } } },
       responses: { "204": { description: "Contraseña cambiada; hay que iniciar sesión de nuevo" }, "400": { description: "Contraseña actual incorrecta o nueva no válida" }, ...unauthorized },

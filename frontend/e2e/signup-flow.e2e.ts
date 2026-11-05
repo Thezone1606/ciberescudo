@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 // puede volver a iniciar sesión con la contraseña que eligió y no ve nada de administración.
 test("registro propio: crear cuenta, entrar a los retos y volver a iniciar sesión", async ({ page }) => {
   const email = `e2e.registro.${Date.now()}@dsintelligence.test`;
-  const password = "Mi-Clave-Larga-De-Prueba-2026";
+  const password = "Mi-Clave-123";
 
   await page.goto("/login");
   await page.getByRole("link", { name: "Crea tu cuenta" }).click();

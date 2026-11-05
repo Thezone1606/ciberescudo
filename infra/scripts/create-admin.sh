@@ -5,6 +5,6 @@ set -eu
 cd "$(dirname "$0")/.."
 printf "Correo del administrador: "; read -r ADMIN_EMAIL
 printf "Nombre completo: "; read -r ADMIN_NAME
-printf "Contraseña (mínimo 12 caracteres): "; stty -echo; read -r ADMIN_PASSWORD; stty echo; printf "\n"
+printf "Contraseña (de 8 a 12 caracteres): "; stty -echo; read -r ADMIN_PASSWORD; stty echo; printf "\n"
 export ADMIN_EMAIL ADMIN_NAME ADMIN_PASSWORD
 docker compose exec -e ADMIN_EMAIL -e ADMIN_NAME -e ADMIN_PASSWORD backend node dist/scripts/create-admin.js
