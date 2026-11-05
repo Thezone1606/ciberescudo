@@ -53,11 +53,28 @@ interface SessionValue {
   user: Profile | null;
   /** Devuelve un mensaje de error en español, o null si entró. */
   login: (email: string, password: string, portal?: Portal) => Promise<string | null>;
+  signup: (input: SignupInput) => Promise<string | null>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 export type Portal = "admin" | "user";
+
+export interface SignupInput {
+  fullName: string;
+  email: string;
+  password: string;
+  departmentId: string;
+  code?: string;
+}
+
+// Mensajes de registro por código de error del servidor.
+const SIGNUP_ERRORS: Record<string, string> = {
+  signup_disabled: "El registro no está abierto. Pide a tu administrador que te invite.",
+  invalid_code: "El código de registro no es correcto.",
+  email_taken: "Ya existe una cuenta con ese correo. Inicia sesión.",
+  weak_password: "La contraseña no debe contener tu nombre de usuario.",
+};
 
 const WRONG_PORTAL: Record<Portal, string> = {
   admin: "Esta cuenta no tiene acceso a administración. Entra por la página de usuarios.",
@@ -112,6 +129,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const signup = useCallback(async (input: SignupInput) => {
+    const res = await fetch("/api/session/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input),
+      cache: "no-store",
+    }).catch(() => null);
+    if (!res) return "No se pudo conectar con el servidor. Inténtalo de nuevo.";
+    if (res.status === 429) return "Demasiados intentos. Espera un minuto e inténtalo de nuevo.";
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string; code?: string; message?: string };
+      const code = body.error ?? body.code ?? "";
+      if (code === "email_domain_not_allowed" && body.message) return body.message;
+      return SIGNUP_ERRORS[code] ?? "No se pudo crear la cuenta. Revisa los datos e inténtalo de nuevo.";
+    }
+    const data = await res.json();
+    accessToken = data.accessToken;
+    setUser(data.user);
+    setStatus("authed");
+    return null;
+  }, []);
+
   const logout = useCallback(async () => {
     const headers: Record<string, string> = accessToken ? { authorization: `Bearer ${accessToken}` } : {};
     await fetch("/api/session/logout", { method: "POST", headers }).catch(() => null);
@@ -120,7 +159,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setStatus("anon");
   }, []);
 
-  const value = useMemo(() => ({ status, user, login, logout, refreshProfile }), [status, user, login, logout, refreshProfile]);
+  const value = useMemo(() => ({ status, user, login, signup, logout, refreshProfile }), [status, user, login, signup, logout, refreshProfile]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

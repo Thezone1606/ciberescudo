@@ -215,7 +215,7 @@ Crea el primer administrador (la contraseña se pide sin eco, mínimo 12 caracte
 ./scripts/create-admin.sh
 ```
 
-Después entra al **portal de administración**: `https://SERVER_NAME/admin/login`. Las demás personas entran por `https://SERVER_NAME/login`.
+Después entra al **portal de administración**: `https://SERVER_NAME/admin/login`. Las demás personas entran por `https://SERVER_NAME/login` y, si el registro está abierto, crean su cuenta en `https://SERVER_NAME/registro`.
 
 ### Certificados
 
@@ -233,6 +233,8 @@ ejecuta `docker compose restart nginx`.
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Base de datos. La contraseña es obligatoria. |
 | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Firma de sesiones. Obligatorias y distintas; la API no arranca con valores de ejemplo. |
 | `SEED_DEMO_USERS`, `SEED_PASSWORD` | Solo para pruebas: crea colaborador, analista y SecOps de demostración. |
+| `SIGNUP_ALLOWED_DOMAINS` | Dominios de correo que pueden **crear su propia cuenta** en `/registro` (por ejemplo `dsintelligence.com`). Vacío = registro cerrado y solo se entra por invitación. |
+| `SIGNUP_CODE` | Código opcional que el administrador da a quien se registra. |
 
 ### Operación
 
@@ -287,13 +289,31 @@ Las migraciones se aplican solas al arrancar el backend. Haz un respaldo antes d
 
 ---
 
+## Registro de usuarios
+
+Las personas pueden **crear su propia cuenta** en `/registro` (o ser invitadas por el administrador):
+
+```
+   /registro ──► nombre · correo corporativo · departamento · contraseña (12+ caracteres)
+                      │
+                      ├─ el correo debe terminar en un dominio de SIGNUP_ALLOWED_DOMAINS
+                      ├─ si hay SIGNUP_CODE, también se pide el código
+                      └─ siempre se crea como COLABORADOR  ──► entra directo a sus retos
+```
+
+Por seguridad el registro está **cerrado por defecto**: solo se abre al definir `SIGNUP_ALLOWED_DOMAINS`. Como la plataforma
+no envía correos, no se verifica que el correo sea de la persona: el filtro de dominio y el código opcional son lo que
+decide quién puede registrarse, y el registro tiene su propio límite de 5 intentos por minuto en Nginx.
+
+---
+
 ## Administración
 
 Hay **dos entradas separadas** para que nadie se confunda:
 
 ```
    PERSONAS USUARIAS                         ADMINISTRADORES (SecOps)
-   /login                                    /admin/login
+   /login  y  /registro                      /admin/login
    retos · escudo · racha · XP               panel · retos · usuarios · piloto
    (sin nada de administración)              (sin escudo, racha ni XP)
 ```

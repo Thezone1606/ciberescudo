@@ -95,7 +95,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-8 text-sm text-muted">Todos los escenarios usan datos sintéticos.</p>
+        <p className="mt-8 text-sm">
+          ¿Primera vez?{" "}
+          <Link href="/registro" className="font-medium text-cyan underline-offset-2 hover:underline">
+            Crea tu cuenta
+          </Link>
+        </p>
+        <p className="mt-4 text-sm text-muted">Todos los escenarios usan datos sintéticos.</p>
         <p className="mt-2 text-sm text-muted">
           ¿Administras la plataforma?{" "}
           <Link href="/admin/login" className="text-cyan underline-offset-2 hover:underline">

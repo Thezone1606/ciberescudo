@@ -9,7 +9,7 @@ async function main() {
   const ids = e2e.map((c) => c.id);
   await prisma.attempt.deleteMany({ where: { challengeId: { in: ids } } });
   await prisma.challenge.deleteMany({ where: { id: { in: ids } } });
-  await prisma.user.deleteMany({ where: { email: { startsWith: "e2e.invitado." } } });
+  await prisma.user.deleteMany({ where: { OR: [{ email: { startsWith: "e2e.invitado." } }, { email: { startsWith: "e2e.registro." } }] } });
   await prisma.attempt.deleteMany({ where: { phase: { not: "PRACTICE" } } });
   await prisma.susResponse.deleteMany();
   await prisma.setting.deleteMany({ where: { key: "pilot_phase" } });

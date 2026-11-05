@@ -79,6 +79,8 @@ services:
       TRUST_PROXY: "true"
       SEED_DEMO_USERS: ${SEED_DEMO_USERS:-false}
       SEED_PASSWORD: ${SEED_PASSWORD:-}
+      SIGNUP_ALLOWED_DOMAINS: ${SIGNUP_ALLOWED_DOMAINS:-}
+      SIGNUP_CODE: ${SIGNUP_CODE:-}
     read_only: true
     tmpfs: ["/tmp"]
     networks: [api, data]

@@ -1,5 +1,5 @@
 import argon2 from "argon2";
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import { prisma } from "../../db";
 import { HttpError } from "../../middleware/errors";
 import { recoverShield } from "../gamification/rules";
@@ -139,4 +139,72 @@ export async function getProfile(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, include: userInclude });
   if (!user) throw new HttpError(401, "Usuario no encontrado", "unauthorized");
   return toProfile(user);
+}
+
+// --- Registro propio (sign-up) -------------------------------------------------------------------
+// Solo está abierto si SIGNUP_ALLOWED_DOMAINS lista al menos un dominio. Sin verificación por correo, ese filtro
+// (y, opcionalmente, un código que da el administrador) es lo que decide quién puede registrarse. Siempre COLABORADOR.
+
+/** Se lee en cada petición, no al arrancar: así se puede cambiar la configuración sin tocar el código. */
+export function signupConfig() {
+  const domains = (process.env.SIGNUP_ALLOWED_DOMAINS ?? "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
+    .filter(Boolean);
+  const code = process.env.SIGNUP_CODE?.trim() ?? "";
+  return { enabled: domains.length > 0, domains, code, requiresCode: code.length > 0 };
+}
+
+export async function signupInfo() {
+  const cfg = signupConfig();
+  const departments = cfg.enabled ? await prisma.department.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }) : [];
+  return { enabled: cfg.enabled, requiresCode: cfg.requiresCode, domains: cfg.domains, departments };
+}
+
+const sameSecret = (a: string, b: string) => {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+};
+
+export interface SignupInput {
+  fullName: string;
+  email: string;
+  password: string;
+  departmentId: string;
+  code?: string;
+}
+
+export async function signup(input: SignupInput) {
+  const cfg = signupConfig();
+  if (!cfg.enabled) throw new HttpError(403, "El registro no está abierto. Pide a tu administrador que te invite.", "signup_disabled");
+  if (cfg.requiresCode && !sameSecret(input.code ?? "", cfg.code)) throw new HttpError(403, "El código de registro no es correcto", "invalid_code");
+
+  const email = input.email.toLowerCase();
+  if (!cfg.domains.includes(email.split("@")[1])) {
+    throw new HttpError(400, `Usa tu correo corporativo (@${cfg.domains.join(" o @")})`, "email_domain_not_allowed");
+  }
+  if (input.password.toLowerCase().includes(email.split("@")[0])) {
+    throw new HttpError(400, "La contraseña no debe contener tu nombre de usuario", "weak_password");
+  }
+  const [department, role] = await Promise.all([
+    prisma.department.findUnique({ where: { id: input.departmentId } }),
+    prisma.role.findUniqueOrThrow({ where: { name: "COLABORADOR" } }),
+  ]);
+  if (!department) throw new HttpError(400, "El departamento no existe", "invalid_department");
+  if (await prisma.user.findUnique({ where: { email } })) {
+    throw new HttpError(409, "Ya existe una cuenta con ese correo. Inicia sesión.", "email_taken");
+  }
+
+  const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
+  const user = await prisma.user
+    .create({
+      data: { email, fullName: input.fullName.trim(), passwordHash, roleId: role.id, departmentId: department.id, lastLoginAt: new Date() },
+      include: userInclude,
+    })
+    .catch((e: { code?: string }) => {
+      if (e.code === "P2002") throw new HttpError(409, "Ya existe una cuenta con ese correo. Inicia sesión.", "email_taken");
+      throw e;
+    });
+  return { ...(await issueTokens(user)), user: toProfile(user) };
 }
