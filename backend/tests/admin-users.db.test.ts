@@ -189,3 +189,81 @@ describe("usuarios: restablecer contraseña", () => {
     expect((await request(app).post(`/api/v1/admin/users/${p.id}/reset-password`).set(bearer(token))).status).toBe(403);
   });
 });
+
+describe("usuarios: invitar personas", () => {
+  const invited: string[] = [];
+  afterAll(async () => {
+    await prisma.user.deleteMany({ where: { email: { in: invited } } });
+  });
+  const invite = (token: string, body: object) => request(app).post("/api/v1/admin/users/invite").set(bearer(token)).send(body);
+  const mail = () => {
+    const e = `invitado-${Math.random().toString(36).slice(2, 10)}@dsintelligence.test`;
+    invited.push(e);
+    return e;
+  };
+
+  it("crea cuentas con contraseña inicial que funciona; aparecen como «nuevas» y con el rol pedido", async () => {
+    const a = await admin();
+    const dept = await prisma.department.findFirstOrThrow();
+    const [e1, e2] = [mail(), mail()];
+    const res = await invite(a.token, {
+      people: [
+        { email: e1.toUpperCase(), fullName: "Persona Uno", departmentId: dept.id },
+        { email: e2, fullName: "Persona Dos", departmentId: dept.id, role: "ANALISTA" },
+      ],
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.results.map((r: { status: string }) => r.status)).toEqual(["creada", "creada"]);
+    expect(res.body.results[0].email).toBe(e1); // el correo se guarda en minúsculas
+
+    const first = res.body.results[0];
+    expect((await login(first.email, first.password)).status).toBe(200);
+    const rows = (await list(a.token, "?status=new&search=invitado-")).body.users as { email: string; role: string }[];
+    expect(rows.find((u) => u.email === e2)?.role).toBe("ANALISTA");
+    const stored = await prisma.user.findUniqueOrThrow({ where: { email: e2 } });
+    expect(stored.passwordHash.startsWith("$argon2id$")).toBe(true);
+  });
+
+  it("acepta el CSV del alta masiva y, si una línea falla, no crea a nadie", async () => {
+    const a = await admin();
+    const dept = await prisma.department.findFirstOrThrow();
+    const ok = mail();
+    const good = await invite(a.token, { csv: `correo,nombre,departamento\n${ok},Desde Csv,${dept.name}\n` });
+    expect(good.status).toBe(201);
+    expect(good.body.results[0].status).toBe("creada");
+
+    const fine = mail();
+    const bad = await invite(a.token, { csv: `correo,nombre,departamento\n${fine},Persona Buena,${dept.name}\nno-es-correo,Persona Mala,${dept.name}\n` });
+    expect(bad.status).toBe(400);
+    expect(bad.body.errors[0].line).toBe(3);
+    expect(await prisma.user.findUnique({ where: { email: fine } })).toBeNull();
+  });
+
+  it("una cuenta que ya existe no se toca (no se le cambia la contraseña)", async () => {
+    const a = await admin();
+    const p = await player();
+    const dept = await prisma.department.findFirstOrThrow();
+    const res = await invite(a.token, { people: [{ email: p.email, fullName: "Otro Nombre", departmentId: dept.id }] });
+    expect(res.status).toBe(201);
+    expect(res.body.results[0].status).toBe("ya existía");
+    expect(res.body.results[0].password).toBeUndefined();
+    expect((await login(p.email, p.password)).status).toBe(200);
+  });
+
+  it("valida los datos: correo, departamento, rol, repetidos y permisos", async () => {
+    const a = await admin();
+    const dept = await prisma.department.findFirstOrThrow();
+    const base = { fullName: "Alguien", departmentId: dept.id };
+    expect((await invite(a.token, { people: [{ ...base, email: "no-correo" }] })).status).toBe(400);
+    expect((await invite(a.token, { people: [{ ...base, email: mail(), role: "SECOPS" }] })).status).toBe(400); // un administrador no se invita desde aquí
+    expect((await invite(a.token, { people: [] })).status).toBe(400);
+    expect((await invite(a.token, { people: [{ ...base, email: mail(), departmentId: "00000000-0000-4000-8000-000000000000" }] })).status).toBe(400);
+    const dup = mail();
+    expect((await invite(a.token, { people: [{ ...base, email: dup }, { ...base, email: dup }] })).status).toBe(400);
+    expect(await prisma.user.findUnique({ where: { email: dup } })).toBeNull();
+
+    const p = await player();
+    const token = (await login(p.email, p.password)).body.accessToken as string;
+    expect((await invite(token, { people: [{ ...base, email: mail() }] })).status).toBe(403);
+  });
+});

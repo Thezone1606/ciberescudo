@@ -232,6 +232,9 @@ Object.assign(openapi.paths, {
       responses: { "200": { description: "Usuarios y totales de retos" }, "400": { description: "Filtro inválido" }, ...adminResponses },
     },
   },
+  "/admin/users/invite": {
+    post: { summary: "Invita personas: crea las cuentas con contraseña inicial aleatoria (se devuelve una sola vez). Acepta `people` o `csv`", security: secured, responses: { "201": { description: "Resultado por persona: creada o ya existía" }, "400": { description: "Datos inválidos: no se crea ninguna cuenta" }, ...adminResponses } },
+  },
   "/admin/users/{id}": {
     patch: { summary: "Edita nombre, departamento, rol o estado (activo/inactivo). Desactivar cierra sus sesiones", security: secured, responses: { "200": { description: "Usuario actualizado" }, "400": { description: "Datos inválidos" }, "404": { description: "No existe" }, "409": { description: "Un administrador no puede quitarse su propio acceso" }, ...adminResponses } },
   },

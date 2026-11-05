@@ -1,7 +1,7 @@
 import argon2 from "argon2";
 import { prisma } from "../../db";
 import { HttpError } from "../../middleware/errors";
-import { generatePassword } from "../pilot/pilot-users";
+import { generatePassword, importParticipants, parseParticipants, type ImportResult, type ParticipantRow, type RowError } from "../pilot/pilot-users";
 import { getPhase } from "../pilot/pilot.service";
 
 export type UserStatus = "new" | "existing";
@@ -126,4 +126,31 @@ export async function resetPassword(id: string) {
     prisma.refreshToken.deleteMany({ where: { userId: id } }),
   ]);
   return { email: user.email, fullName: user.fullName, password };
+}
+
+export type InviteInput = { people: { email: string; fullName: string; departmentId: string; role: "COLABORADOR" | "ANALISTA" }[] } | { csv: string };
+
+/** Crea las cuentas invitadas. Una cuenta que ya existe no se toca: se informa como «ya existía». */
+export async function inviteUsers(input: InviteInput): Promise<{ results: ImportResult[]; errors: RowError[] }> {
+  const departments = await prisma.department.findMany();
+  let rows: ParticipantRow[];
+  if ("csv" in input) {
+    const parsed = parseParticipants(input.csv, departments.map((d) => d.name));
+    if (parsed.errors.length) return { results: [], errors: parsed.errors };
+    rows = parsed.rows;
+  } else {
+    const byId = new Map(departments.map((d) => [d.id, d.name]));
+    const errors: RowError[] = [];
+    const seen = new Set<string>();
+    rows = [];
+    input.people.forEach((p, i) => {
+      const department = byId.get(p.departmentId);
+      if (!department) return errors.push({ line: i + 1, message: "El departamento no existe" });
+      if (seen.has(p.email)) return errors.push({ line: i + 1, message: `Correo repetido en la lista: ${p.email}` });
+      seen.add(p.email);
+      rows.push({ email: p.email, fullName: p.fullName, department, role: p.role });
+    });
+    if (errors.length) return { results: [], errors };
+  }
+  return { results: await importParticipants(rows), errors: [] };
 }

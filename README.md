@@ -295,7 +295,7 @@ Con el rol de administrador (SecOps) se abre la sección **Administración**:
 | --- | --- |
 | **Panel** | Adopción, adherencia a rachas, tiempo medio de detección y un **mapa de calor** departamento × categoría. Las celdas con menos de 5 intentos no muestran porcentaje. Exporta a CSV o JSON. |
 | **Retos** | Alta, edición y baja de retos con formularios por tipo (correo de phishing, decisión rápida, cadena de custodia, terminal). |
-| **Usuarios** | Dos listas: **Nuevos** (sin primer acceso) y **Existentes**, con el avance de cada persona. Permite editar nombre, departamento y rol, desactivar cuentas y restablecer contraseñas. |
+| **Usuarios** | **Invita** a una persona o a varias a la vez (se crean sus cuentas con una contraseña inicial que se muestra una sola vez). Dos listas: **Invitados** (aún sin primer acceso) y **Existentes**, con el avance de cada persona. Permite editar nombre, departamento y rol, desactivar cuentas y restablecer contraseñas. |
 | **Piloto** | Controla la fase del piloto y muestra sus resultados. |
 
 ---

@@ -2,6 +2,7 @@
 
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
+import { InvitePanel } from "@/components/admin/InvitePanel";
 import { buttonClass, inputClass } from "@/components/admin/ui";
 import { UserCard } from "@/components/admin/UserCard";
 import type { Filters } from "@/lib/admin";
@@ -12,7 +13,7 @@ import { useApi } from "@/lib/useApi";
 type Tab = "new" | "existing";
 
 const TAB_HELP: Record<Tab, string> = {
-  new: "Cuentas creadas que todavía no han iniciado sesión. Aquí puedes corregir sus datos o generarles una contraseña nueva.",
+  new: "Personas invitadas que todavía no han iniciado sesión. Aquí puedes corregir sus datos o generarles una contraseña nueva.",
   existing: "Personas que ya entraron a la plataforma, con su avance en los retos y en el piloto.",
 };
 
@@ -48,6 +49,8 @@ export default function AdminUsersPage() {
         <p className="mt-1 text-muted">Consulta el avance de cada persona y administra sus cuentas.</p>
       </div>
 
+      <InvitePanel departments={departments} onInvited={users.reload} />
+
       {fresh && (
         <div role="status" className="rounded-lg bg-ok/10 p-4 ring-1 ring-ok/40">
           <p className="font-medium">Contraseña nueva de {fresh.name}</p>
@@ -76,7 +79,7 @@ export default function AdminUsersPage() {
             onClick={() => setTab(t)}
             className="min-h-11 flex-1 rounded-md px-4 text-sm font-medium text-muted transition-colors hover:text-text aria-selected:bg-cyan/15 aria-selected:text-text sm:flex-none"
           >
-            {t === "existing" ? "Existentes" : "Nuevos"} <span className="font-mono">({groups[t].length})</span>
+            {t === "existing" ? "Existentes" : "Invitados"} <span className="font-mono">({groups[t].length})</span>
           </button>
         ))}
       </div>
@@ -102,7 +105,7 @@ export default function AdminUsersPage() {
         {users.loading && <p role="status" className="text-muted">Cargando usuarios…</p>}
         {users.error && <p role="alert" className="text-danger">No se pudieron cargar los usuarios.</p>}
         {users.data && shown.length === 0 && (
-          <p className="text-muted">{tab === "new" ? "No hay cuentas pendientes de primer acceso." : "Todavía nadie con ese filtro ha iniciado sesión."}</p>
+          <p className="text-muted">{tab === "new" ? "No hay invitaciones pendientes de primer acceso." : "Todavía nadie con ese filtro ha iniciado sesión."}</p>
         )}
         {users.data && shown.length > 0 && (
           <ul className="flex flex-col gap-3">

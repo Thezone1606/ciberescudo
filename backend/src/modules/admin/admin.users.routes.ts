@@ -1,8 +1,16 @@
 import type { Router } from "express";
 import { z } from "zod";
-import { listUsers, resetPassword, updateUser } from "./users.admin.service";
+import { inviteUsers, listUsers, resetPassword, updateUser } from "./users.admin.service";
 
 const idParam = z.object({ id: z.string().uuid() });
+const personInput = z
+  .object({
+    email: z.string().trim().toLowerCase().email().max(255),
+    fullName: z.string().trim().min(2).max(150),
+    departmentId: z.string().uuid(),
+    role: z.enum(["COLABORADOR", "ANALISTA"]).default("COLABORADOR"),
+  })
+  .strict();
 
 export function usersAdminRoutes(router: Router) {
   router.get("/admin/users", async (req, res) => {
@@ -14,6 +22,14 @@ export function usersAdminRoutes(router: Router) {
       })
       .parse(req.query);
     res.json(await listUsers({ status: q.status, departmentId: q.department, search: q.search }));
+  });
+
+  // Invita a una o varias personas: crea las cuentas con contraseña inicial aleatoria, que se devuelve una sola vez.
+  // Admite una lista (`people`) o el mismo CSV del alta masiva (`csv`). Si algo no es válido no se crea a nadie.
+  router.post("/admin/users/invite", async (req, res) => {
+    const body = z.union([z.object({ people: z.array(personInput).min(1).max(200) }).strict(), z.object({ csv: z.string().min(1).max(100_000) }).strict()]).parse(req.body);
+    const result = await inviteUsers(body);
+    res.status(result.errors.length ? 400 : 201).json(result);
   });
 
   router.patch("/admin/users/:id", async (req, res) => {
