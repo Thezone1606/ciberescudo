@@ -215,7 +215,7 @@ Crea el primer administrador (la contraseña se pide sin eco, mínimo 12 caracte
 ./scripts/create-admin.sh
 ```
 
-Después entra a `https://SERVER_NAME` y abre **Administración**.
+Después entra al **portal de administración**: `https://SERVER_NAME/admin/login`. Las demás personas entran por `https://SERVER_NAME/login`.
 
 ### Certificados
 
@@ -289,7 +289,17 @@ Las migraciones se aplican solas al arrancar el backend. Haz un respaldo antes d
 
 ## Administración
 
-Con el rol de administrador (SecOps) se abre la sección **Administración**:
+Hay **dos entradas separadas** para que nadie se confunda:
+
+```
+   PERSONAS USUARIAS                         ADMINISTRADORES (SecOps)
+   /login                                    /admin/login
+   retos · escudo · racha · XP               panel · retos · usuarios · piloto
+   (sin nada de administración)              (sin escudo, racha ni XP)
+```
+
+Una cuenta de administración no entra por `/login` ni una cuenta de usuario por `/admin/login`: cada una solo
+abre su portal. El portal de administración tiene estas pestañas:
 
 | Pestaña | Qué permite |
 | --- | --- |

@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
 import { env } from "../src/config/env";
 import { prisma } from "../src/db";
-import { loginAs, USERS } from "./helpers";
+import { createTempUser, deleteTempUser, loginAs, USERS } from "./helpers";
 
 const app = createApp();
 const bearer = (t: string) => ({ Authorization: `Bearer ${t}` });
@@ -102,5 +102,45 @@ describe("refresh y logout", () => {
     const res = await request(app).post("/api/v1/auth/refresh").send({ refreshToken });
     expect(res.status).toBe(401);
     expect((await loginAs(app, "analista")).accessToken).toBeTruthy();
+  });
+});
+
+describe("portales separados", () => {
+  const app2 = createApp();
+  const users: string[] = [];
+  afterAll(async () => {
+    await Promise.all(users.map(deleteTempUser));
+  });
+  const tryLogin = (email: string, password: string, portal?: string) => request(app2).post("/api/v1/auth/login").send({ email, password, portal });
+
+  it("una cuenta de administración no entra por el portal de usuarios ni deja rastro", async () => {
+    const a = await createTempUser("SECOPS");
+    users.push(a.id);
+    const res = await tryLogin(a.email, a.password, "user");
+    expect(res.status).toBe(403);
+    expect(res.body.accessToken).toBeUndefined();
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: a.id } })).lastLoginAt).toBeNull();
+    expect(await prisma.refreshToken.count({ where: { userId: a.id } })).toBe(0);
+    expect((await tryLogin(a.email, a.password, "admin")).status).toBe(200);
+    expect((await tryLogin(a.email, a.password)).status).toBe(200); // sin portal (compatibilidad)
+  });
+
+  it("un colaborador o analista no entra por el portal de administración", async () => {
+    for (const role of ["COLABORADOR", "ANALISTA"] as const) {
+      const u = await createTempUser(role);
+      users.push(u.id);
+      const res = await tryLogin(u.email, u.password, "admin");
+      expect(res.status).toBe(403);
+      expect(res.body.accessToken).toBeUndefined();
+      expect((await tryLogin(u.email, u.password, "user")).status).toBe(200);
+    }
+  });
+
+  it("con contraseña incorrecta responde 401 en ambos portales: no revela el tipo de cuenta", async () => {
+    const a = await createTempUser("SECOPS");
+    users.push(a.id);
+    expect((await tryLogin(a.email, "incorrecta", "user")).status).toBe(401);
+    expect((await tryLogin(a.email, "incorrecta", "admin")).status).toBe(401);
+    expect((await tryLogin(a.email, a.password, "otro")).status).toBe(400);
   });
 });

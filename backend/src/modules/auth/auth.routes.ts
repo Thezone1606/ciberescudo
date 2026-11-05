@@ -5,12 +5,13 @@ import { changePassword, getProfile, login, logout, MIN_PASSWORD_LENGTH, refresh
 
 export const authRouter = Router();
 
-const loginBody = z.object({ email: z.string().email().max(255), password: z.string().min(1).max(200) });
+// `portal` separa las dos entradas: la de administración solo admite cuentas SECOPS y la de usuarios, las demás.
+const loginBody = z.object({ email: z.string().email().max(255), password: z.string().min(1).max(200), portal: z.enum(["admin", "user"]).optional() });
 const refreshBody = z.object({ refreshToken: z.string().min(10) });
 
 authRouter.post("/auth/login", async (req, res) => {
-  const { email, password } = loginBody.parse(req.body);
-  res.json(await login(email, password));
+  const { email, password, portal } = loginBody.parse(req.body);
+  res.json(await login(email, password, portal));
 });
 
 authRouter.post("/auth/refresh", async (req, res) => {

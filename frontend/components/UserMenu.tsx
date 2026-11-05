@@ -9,7 +9,7 @@ import type { Profile } from "@/lib/types";
 
 const ROLE_LABEL = { COLABORADOR: "Colaborador", ANALISTA: "Analista técnico", SECOPS: "Administrador SecOps" } as const;
 
-export function UserMenu({ user }: { user: Profile }) {
+export function UserMenu({ user, accountHref = "/cuenta", loginHref = "/login" }: { user: Profile; accountHref?: string; loginHref?: string }) {
   const { logout } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -63,7 +63,7 @@ export function UserMenu({ user }: { user: Profile }) {
             </p>
           </div>
           <Link
-            href="/cuenta"
+            href={accountHref}
             onClick={() => setOpen(false)}
             className="mt-1 flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm text-muted transition-colors hover:bg-surface-hi hover:text-text"
           >
@@ -74,7 +74,7 @@ export function UserMenu({ user }: { user: Profile }) {
             type="button"
             onClick={async () => {
               await logout();
-              router.replace("/login");
+              router.replace(loginHref);
             }}
             className="mt-1 flex min-h-11 w-full items-center gap-2 rounded-md px-3 text-left text-sm text-muted transition-colors hover:bg-surface-hi hover:text-text"
           >

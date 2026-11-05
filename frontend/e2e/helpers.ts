@@ -10,13 +10,16 @@ export function seedPassword(): string {
   return m[1];
 }
 
-export async function login(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Correo corporativo").fill(email);
-  await page.getByLabel("Contraseña").fill(seedPassword());
-  await page.getByRole("button", { name: "Entrar" }).click();
-  await page.waitForURL("**/");
-}
-
 export const ADMIN = "secops@dsintelligence.test";
 export const PLAYER = "colaborador@dsintelligence.test";
+
+/** Entra por el portal que le corresponde: administración (/admin/login) o usuarios (/login). */
+export async function login(page: Page, email: string) {
+  const admin = email === ADMIN;
+  await page.goto(admin ? "/admin/login" : "/login");
+  await page.getByLabel(admin ? "Correo de administración" : "Correo corporativo").fill(email);
+  await page.getByLabel("Contraseña").fill(seedPassword());
+  await page.getByRole("button", { name: admin ? "Entrar a administración" : "Entrar" }).click();
+  await page.waitForURL(admin ? "**/admin" : "**/");
+}
+

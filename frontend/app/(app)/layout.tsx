@@ -12,9 +12,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (status === "anon") router.replace("/login");
-  }, [status, router]);
+    // Las cuentas de administración tienen su propio portal.
+    else if (status === "authed" && user?.role === "SECOPS") router.replace("/admin");
+  }, [status, user, router]);
 
-  if (status !== "authed" || !user) {
+  if (status !== "authed" || !user || user.role === "SECOPS") {
     return (
       <div className="flex min-h-dvh items-center justify-center text-muted" role="status">
         Cargando tu sesión…

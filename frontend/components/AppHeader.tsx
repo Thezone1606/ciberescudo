@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Route, ShieldCheck, Trophy } from "lucide-react";
+import { Route, ShieldCheck, Trophy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Profile } from "@/lib/types";
@@ -12,9 +12,6 @@ const NAV = [
   { href: "/clasificacion", label: "Clasificación", Icon: Trophy },
 ] as const;
 
-// Solo el rol SECOPS ve el acceso a administración (el backend lo exige de todos modos).
-const ADMIN_NAV = { href: "/admin", label: "Administración", Icon: LayoutDashboard } as const;
-
 function useActive() {
   const pathname = usePathname();
   return (href: string) => (href === "/" ? pathname === "/" || pathname.startsWith("/retos") : pathname.startsWith(href));
@@ -22,7 +19,7 @@ function useActive() {
 
 export function AppHeader({ user }: { user: Profile }) {
   const isActive = useActive();
-  const nav = user.role === "SECOPS" ? [...NAV, ADMIN_NAV] : [...NAV];
+  const nav = NAV;
 
   return (
     <>
@@ -61,7 +58,7 @@ export function AppHeader({ user }: { user: Profile }) {
         aria-label="Principal"
         className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
-        <ul className={`mx-auto grid max-w-md ${nav.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+        <ul className={`mx-auto grid max-w-md grid-cols-2`}>
           {nav.map(({ href, label, Icon }) => (
             <li key={href}>
               <Link

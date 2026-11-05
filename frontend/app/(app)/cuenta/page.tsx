@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { describedBy, Field, inputClass, primaryButtonClass } from "@/components/admin/ui";
 import { apiFetch, useSession } from "@/lib/session";
@@ -11,6 +11,7 @@ type FieldName = "current" | "next" | "confirm" | "form";
 export default function AccountPage() {
   const uid = useId();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useSession();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
@@ -28,7 +29,7 @@ export default function AccountPage() {
     if (res?.status === 204) {
       // El servidor cierra todas las sesiones al cambiar la contraseña: se vuelve a iniciar sesión con la nueva.
       await logout();
-      router.replace("/login?cambio=1");
+      router.replace(pathname.startsWith("/admin") ? "/admin/login?cambio=1" : "/login?cambio=1");
       return;
     }
     const body = (await res?.json().catch(() => ({}))) as { error?: string; message?: string };

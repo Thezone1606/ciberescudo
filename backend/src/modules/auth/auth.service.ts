@@ -62,11 +62,14 @@ async function revokeAllSessions(userId: string) {
   ]);
 }
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string, portal?: "admin" | "user") {
   const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() }, include: userInclude });
   const ok = await argon2.verify(user?.passwordHash ?? (await getDummyHash()), password).catch(() => false);
   // Una cuenta desactivada responde igual que una contraseña incorrecta: no revela que existe.
   if (!user || !ok || !user.isActive) throw new HttpError(401, "Correo o contraseña incorrectos", "invalid_credentials");
+  // Solo después de verificar la contraseña: no se revela qué correos existen. No se emiten tokens ni se registra el acceso.
+  if (portal === "admin" && user.role.name !== "SECOPS") throw new HttpError(403, "Esta cuenta no tiene acceso al portal de administración", "wrong_portal");
+  if (portal === "user" && user.role.name === "SECOPS") throw new HttpError(403, "Las cuentas de administración entran por el portal de administración", "wrong_portal");
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await prisma.refreshToken.deleteMany({ where: { userId: user.id, expiresAt: { lt: new Date() } } });
   return { ...(await issueTokens(user)), user: toProfile(user) };

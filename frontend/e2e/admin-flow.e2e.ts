@@ -8,7 +8,6 @@ test("el administrador crea un reto, un colaborador lo resuelve y el panel se ac
 
   // 1. El administrador entra y ve la sección de administración.
   await login(page, ADMIN);
-  await page.getByRole("link", { name: "Administración" }).first().click();
   await expect(page.getByRole("heading", { name: "Administración", level: 1 })).toBeVisible();
 
   // Intentos totales antes (indicador «N intentos en el periodo»).

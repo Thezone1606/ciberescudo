@@ -52,10 +52,17 @@ interface SessionValue {
   status: Status;
   user: Profile | null;
   /** Devuelve un mensaje de error en español, o null si entró. */
-  login: (email: string, password: string) => Promise<string | null>;
+  login: (email: string, password: string, portal?: Portal) => Promise<string | null>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
+
+export type Portal = "admin" | "user";
+
+const WRONG_PORTAL: Record<Portal, string> = {
+  admin: "Esta cuenta no tiene acceso a administración. Entra por la página de usuarios.",
+  user: "Esta es una cuenta de administración. Entra por el portal de administración.",
+};
 
 const Ctx = createContext<SessionValue | null>(null);
 
@@ -86,15 +93,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string, portal?: Portal) => {
     const res = await fetch("/api/session/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, portal }),
       cache: "no-store",
     }).catch(() => null);
     if (!res) return "No se pudo conectar con el servidor. Inténtalo de nuevo.";
     if (res.status === 401) return "Correo o contraseña incorrectos.";
+    if (res.status === 403 && portal) return WRONG_PORTAL[portal];
     if (res.status === 400) return "Revisa que el correo y la contraseña estén completos.";
     if (!res.ok) return "No se pudo conectar con el servidor. Inténtalo de nuevo.";
     const data = await res.json();

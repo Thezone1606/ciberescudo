@@ -1,6 +1,7 @@
 "use client";
 
 import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useSession } from "@/lib/session";
@@ -30,7 +31,7 @@ export default function LoginPage() {
     const form = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
-    const message = await login(String(form.get("email")).trim(), String(form.get("password")));
+    const message = await login(String(form.get("email")).trim(), String(form.get("password")), "user");
     setBusy(false);
     if (message) setError(message);
   }
@@ -95,6 +96,13 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-8 text-sm text-muted">Todos los escenarios usan datos sintéticos.</p>
+        <p className="mt-2 text-sm text-muted">
+          ¿Administras la plataforma?{" "}
+          <Link href="/admin/login" className="text-cyan underline-offset-2 hover:underline">
+            Portal de administración
+          </Link>
+          .
+        </p>
       </div>
     </main>
   );
