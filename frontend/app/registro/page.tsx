@@ -10,6 +10,7 @@ import { useApi } from "@/lib/useApi";
 interface SignupInfo {
   enabled: boolean;
   requiresCode: boolean;
+  anyDomain: boolean;
   domains: string[];
   departments: { id: string; name: string }[];
 }
@@ -115,12 +116,12 @@ export default function SignupPage() {
                 maxLength={255}
                 aria-describedby="email-hint"
                 className={field}
-                placeholder={`nombre@${data.domains[0]}`}
+                placeholder={data.anyDomain ? "nombre@ejemplo.com" : `nombre@${data.domains[0]}`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <p id="email-hint" className="text-sm text-muted">
-                Debe terminar en {data.domains.map((d) => `@${d}`).join(" o ")}.
+                {data.anyDomain ? "Por ahora puedes usar un correo de prueba; no se envía nada a esa dirección." : `Debe terminar en ${data.domains.map((d) => `@${d}`).join(" o ")}.`}
               </p>
             </div>
 

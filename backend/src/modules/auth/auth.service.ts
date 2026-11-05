@@ -153,13 +153,14 @@ export function signupConfig() {
     .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
     .filter(Boolean);
   const code = process.env.SIGNUP_CODE?.trim() ?? "";
-  return { enabled: domains.length > 0, domains, code, requiresCode: code.length > 0 };
+  // Con «*» se acepta cualquier dominio (correos de prueba o ficticios); sigue validándose que sea un correo bien formado.
+  return { enabled: domains.length > 0, domains, anyDomain: domains.includes("*"), code, requiresCode: code.length > 0 };
 }
 
 export async function signupInfo() {
   const cfg = signupConfig();
   const departments = cfg.enabled ? await prisma.department.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }) : [];
-  return { enabled: cfg.enabled, requiresCode: cfg.requiresCode, domains: cfg.domains, departments };
+  return { enabled: cfg.enabled, requiresCode: cfg.requiresCode, anyDomain: cfg.anyDomain, domains: cfg.domains, departments };
 }
 
 const sameSecret = (a: string, b: string) => {
@@ -182,7 +183,7 @@ export async function signup(input: SignupInput) {
   if (cfg.requiresCode && !sameSecret(input.code ?? "", cfg.code)) throw new HttpError(403, "El código de registro no es correcto", "invalid_code");
 
   const email = input.email.toLowerCase();
-  if (!cfg.domains.includes(email.split("@")[1])) {
+  if (!cfg.anyDomain && !cfg.domains.includes(email.split("@")[1])) {
     throw new HttpError(400, `Usa tu correo corporativo (@${cfg.domains.join(" o @")})`, "email_domain_not_allowed");
   }
   if (input.password.toLowerCase().includes(email.split("@")[0])) {

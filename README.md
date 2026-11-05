@@ -233,7 +233,7 @@ ejecuta `docker compose restart nginx`.
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Base de datos. La contraseña es obligatoria. |
 | `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Firma de sesiones. Obligatorias y distintas; la API no arranca con valores de ejemplo. |
 | `SEED_DEMO_USERS`, `SEED_PASSWORD` | Solo para pruebas: crea colaborador, analista y SecOps de demostración. |
-| `SIGNUP_ALLOWED_DOMAINS` | Dominios de correo que pueden **crear su propia cuenta** en `/registro` (por ejemplo `dsintelligence.com`). Vacío = registro cerrado y solo se entra por invitación. |
+| `SIGNUP_ALLOWED_DOMAINS` | Dominios de correo que pueden **crear su propia cuenta** en `/registro` (por ejemplo `dsintelligence.com`). `*` acepta cualquier dominio, también correos ficticios (solo para pruebas). Vacío = registro cerrado y solo se entra por invitación. |
 | `SIGNUP_CODE` | Código opcional que el administrador da a quien se registra. |
 
 ### Operación

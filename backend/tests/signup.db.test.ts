@@ -130,3 +130,23 @@ describe("largo de la contraseña: de 8 a 12 caracteres", () => {
     expect(long.body.issues[0].message).toMatch(/Máximo 12/);
   });
 });
+
+describe("registro con correos ficticios (SIGNUP_ALLOWED_DOMAINS=*)", () => {
+  it("acepta cualquier dominio, pero el correo debe estar bien formado", async () => {
+    process.env.SIGNUP_ALLOWED_DOMAINS = "*";
+    const d = (await dept()).id;
+    const base = { fullName: "Persona Ficticia", password: "Clave-Segur1", departmentId: d };
+    expect((await signup({ ...base, email: mail("ejemplo.com") })).status).toBe(201);
+    expect((await signup({ ...base, email: mail("correo-falso.xyz") })).status).toBe(201);
+    expect((await signup({ ...base, email: "sin-arroba" })).status).toBe(400);
+    const info = await request(app).get("/api/v1/auth/signup-info");
+    expect(info.body.anyDomain).toBe(true);
+    expect(info.body.enabled).toBe(true);
+  });
+
+  it("sigue siendo siempre colaborador, aunque el dominio sea libre", async () => {
+    process.env.SIGNUP_ALLOWED_DOMAINS = "*";
+    const res = await signup({ fullName: "Falso Admin", email: mail("ejemplo.com"), password: "Clave-Segur1", departmentId: (await dept()).id });
+    expect(res.body.user.role).toBe("COLABORADOR");
+  });
+});
